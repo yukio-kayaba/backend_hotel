@@ -29,12 +29,19 @@ const validador = (texto)=>{
 }
 
 router.post('/',async (req,res)=>{
-    const [rows] = await pool.query('select * from informacion_habitaciones;');
+    // const {id,id_token,token} = req.headers; 
+    const {limite} = req.body;
+    console.log(limite); 
+    const [rows] = await pool.query(`select * from informacion_habitaciones limit ${limite},10;`);
+    console.log(rows);
     rows.forEach(element => {
-        element.enlaces = convertidor_arrays_imagenes(element.enlaces);
+        if(element.enlaces != null){
+            element.enlaces = convertidor_arrays_imagenes(element.enlaces);
+        }
     });
     res.json(rows);
 });
+
 router.post('/add',async(req,res)=>{
     const {caracteristicas,cuartos,precio } = req.body;
     if(!validador(caracteristicas)) res.render("error");
@@ -117,5 +124,14 @@ router.post('/reporte_mensual',async(req,res) => {
         return res.send(JSON.stringify(reporte_mensual[0]));
     }
     res.send("error data");
+});
+
+router.post('/habitaciones',async (req,res)=>{
+    const {id,id_token,token} = req.headers; 
+    const [rows] = await pool.query('select * from informacion_habitaciones  ;');
+    rows.forEach(element => {
+        element.enlaces = convertidor_arrays_imagenes(element.enlaces);
+    });
+    res.json(rows);
 });
 export default router;
