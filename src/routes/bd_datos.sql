@@ -103,7 +103,7 @@ CREATE VIEW `bd_hotel`.`deuda_clientes` AS
             AND `h`.`id_hab` = `rh`.`id_habitacion`
     GROUP BY `rh`.`id_cliente`;
 
-
+DELIMITER $$
 CREATE PROCEDURE `inicio_sesion` (id_user int , valor_token varchar(145))
 BEGIN
 	declare id_gen int;
@@ -111,10 +111,9 @@ BEGIN
     set id_gen = LAST_INSERT_ID();
     select  u.nombre,u.apellido,u.dni,t.id_token from usuarios_clientes u,tokens_user t where t.id_token = id_gen;
 END$$
-
+DELIMITER ;
 
 DELIMITER $$
-USE `bd_hotel2`$$
 CREATE PROCEDURE `inicio_sesion_adm` (correo_d varchar(245),contra_d varchar(145),tokem varchar(145))
 BEGIN
 	declare id_usuario,id_tokem integer;
@@ -131,7 +130,6 @@ DELIMITER ;
 
 
 DELIMITER $$
-USE `bd_hotel2`$$
 CREATE PROCEDURE `reporte` (fecha_aux date)
 BEGIN
 	declare habitaciones,reporte,usuario int default 0;
@@ -144,7 +142,6 @@ END$$
 DELIMITER ;
 
 DELIMITER $$
-USE `bd_hotel2`$$
 CREATE PROCEDURE `suma_reporte_urh`(mes varchar(4))
 BEGIN
 	declare cant_h,cant_clientes,cant_reclamos integer;
@@ -158,7 +155,6 @@ DELIMITER ;
 
 
 DELIMITER $$
-USE `bd_hotel2`$$
 CREATE PROCEDURE `suma_reporte_usuarios` ()
 BEGIN
 	select sum(h.suma_users) as habitaciones , sum(u.suma_users) as usuarios,sum(r.suma_datos) as reclamos from reporte_habitaciones_dias h, 
@@ -168,7 +164,6 @@ END$$
 DELIMITER ;
 
 DELIMITER $$
-USE `bd_hotel2`$$
 CREATE PROCEDURE `VENTAS_DIARIAS_HORA`(FECHA_DATE DATE)
 BEGIN
 	select hour(fecha_reservacion) as hora,count(*) as fechas from registro_habitaciones where DATE(fecha_reservacion) = FECHA_DATE group by hour(fecha_reservacion) order by fechas; 
@@ -176,3 +171,8 @@ END$$
 
 DELIMITER ;
 
+
+
+---------------------------------
+ALTER TABLE `bd_hotel`.`habitaciones` 
+CHANGE COLUMN `cuartos` `cuartos` INT(11) NULL DEFAULT 0 ;

@@ -42,18 +42,32 @@ router.post('/add',async(req,res)=>{
 
 router.post('/login_adm',async(req,res)=>{
     try {
-        const {correo,contra} = req.body;
-        console.log(req.body);
+        const {correo,contra,ip} = req.body;
+        // console.log(req.body);
         const exp_email = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         const exp_contra = /^[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑçÇ\s]+$/;
     
         const valor = getRandomInRange(1,150);
         const valor1 = getRandomInRange(1,150);
-        console.log(`correo : ${correo}  - contra : ${contra}`);
+        console.log(`correo : ${correo}  - contra : ${contra} - ip : ${ip} `);
         if(!exp_contra.test(contra) || !exp_email.test(correo)){
             return res.send("error de expresion");
         }
-        let tokem = `t${valor1}adm${valor}`;
+        const userAgent = ip;
+        const compressedInfo = userAgent.match(/(Windows NT|Mac OS X|Linux|Android|iPhone).*?(Chrome|Firefox|Safari|Edge|Opera)\/([\d.]+)/);
+        
+        let tokem = `t${valor1}`;
+        if (compressedInfo) {
+            const os = compressedInfo[1]; 
+            const browser = compressedInfo[2]; 
+            const version = compressedInfo[3];
+
+            console.log(`Sistema operativo: ${os}`);
+            console.log(`Navegador: ${browser}`);
+            console.log(`Versión: ${version}`);
+            tokem += `adm${os}n${browser}v${version}`;
+        }
+
         const [rows] = await pool.query("call inicio_sesion_adm(?, ? , ?);",[correo,contra,tokem]);
         if(rows.length > 0){
             return res.send(JSON.stringify(rows[0]));
@@ -68,7 +82,7 @@ router.post('/login_adm',async(req,res)=>{
 router.post('/reporte_dias',async(req,res)=>{
     const {id,id_token,token} = req.headers;
     const {fecha} = req.body;
-    const exp_contra = /^[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑçÇ\s]+$/;
+    const exp_contra = /^[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑçÇ\s.\n]+$/;
     if(!exp_contra.test(token) || !exp_contra.test(id) || !exp_contra.test(id_token)){
         return res.send("token no valido");
     }
@@ -80,7 +94,7 @@ router.post('/reporte_dias',async(req,res)=>{
         const [hors] = await pool.query("call VENTAS_DIARIAS_HORA( ? )",[fecha]);
         
         let datos_r = [JSON.stringify(rows[0]),JSON.stringify(hors[0])];
-        console.log(`datos _ r : ${JSON.stringify(datos_r)}`);
+        // console.log(`datos _ r : ${JSON.stringify(datos_r)}`);
         return res.send(JSON.stringify(datos_r));
     }
     res.send("error data");
@@ -88,19 +102,19 @@ router.post('/reporte_dias',async(req,res)=>{
 router.post('/reporte_mensual',async(req,res) => {
     const {id,id_token,token} = req.headers;
     const {fecha} = req.body;
-    const exp_contra = /^[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑçÇ\s]+$/;
+    const exp_contra = /^[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑçÇ\s.\n]+$/;
     if(!exp_contra.test(token) || !exp_contra.test(id) || !exp_contra.test(id_token)){
         return res.send("token no valido");
     }
     const [datos] = await pool.query(`select a.correo from administradores a, tokens_user t where a.id = ${id} and t.id_token = ${id_token} and t.token = '${token}' and t.activo = '1';`); 
 
     if(!String(fecha)){
-        res.send("el mes no es valido");
+        return res.send("el mes no es valido");
     }
 
     if(datos[0]){
         const [reporte_mensual] = await pool.query("call bd_hotel.suma_reporte_urh( ? );",[fecha]);
-        res.send(JSON.stringify(reporte_mensual[0]));
+        return res.send(JSON.stringify(reporte_mensual[0]));
     }
     res.send("error data");
 });
