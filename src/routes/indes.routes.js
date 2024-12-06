@@ -126,12 +126,4 @@ router.post('/reporte_mensual',async(req,res) => {
     res.send("error data");
 });
 
-router.post('/habitaciones',async (req,res)=>{
-    const {id,id_token,token} = req.headers; 
-    const [rows] = await pool.query('select * from informacion_habitaciones  ;');
-    rows.forEach(element => {
-        element.enlaces = convertidor_arrays_imagenes(element.enlaces);
-    });
-    res.json(rows);
-});
 export default router;

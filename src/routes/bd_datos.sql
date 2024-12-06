@@ -173,6 +173,22 @@ DELIMITER ;
 
 
 
----------------------------------
+-------------------------------
+--  
 ALTER TABLE `bd_hotel`.`habitaciones` 
 CHANGE COLUMN `cuartos` `cuartos` INT(11) NULL DEFAULT 0 ;
+
+DELIMITER $$
+CREATE PROCEDURE `inicio_sesion`(correo_d varchar(245),contra_d varchar(145) , valor_token varchar(145))
+BEGIN
+    declare id_usuario,id_tokem integer;
+    
+    set id_usuario = (SELECT id_user from usuarios_clientes where correo = correo_d and contra = contra_d);
+    
+    if id_usuario != '' then
+		Insert into tokens_user(id_user,token) values (id_usuario,valor_token);
+        set id_tokem = last_insert_id();
+        select u.id_user,u.correo,u.nombre,u.apellido,u.dni, id_tokem as id_tokem,valor_token as tokem from usuarios_clientes u where id_user = id_usuario;  
+    end if;
+END
+DELIMITER;
