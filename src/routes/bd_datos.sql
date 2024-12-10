@@ -192,3 +192,27 @@ BEGIN
     end if;
 END
 DELIMITER;
+
+--  agregado el 10-12-2024
+DELIMITER $$
+CREATE PROCEDURE `agregar_habitaciones` (caracteristicas_aux varchar(245),precio decimal)
+BEGIN
+	declare id_aux integer default -1;
+	Insert Into habitaciones(`caracteristicas`,`precio`) values(caracteristicas_aux,precio);
+    set id_aux = last_insert_id();
+    select id_aux as id_habitacion;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE `agregar_imagenes` (id_hab int,url varchar(345))
+BEGIN
+	declare id_aux integer default -1;
+	Insert Into fotos_habitaciones(`id_habitacion`,`url_imagen`) values(id_hab,url);
+    set id_aux = last_insert_id();
+    select id_aux as id_habitacion;
+END$$
+
+DELIMITER ;

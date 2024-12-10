@@ -64,17 +64,30 @@ router.post('/',async (req,res)=>{
 router.post('/fotos',async (req,res)=>{
     const {id} = req.body;
     const [rows] = await pool.query(`SELECT * FROM fotos_habitaciones where id_habitacion = ? ;`,[id]);   
-    // console.log(id);
+    // console.log(id); 
     // console.log(rows);
-    if(rows){
+    if(rows[0]){
         return res.json(rows);
     }
     res.send("error");
 });
 
-router.post('/add',async(req,res)=>{
-    const {caracteristicas,cuartos,precio } = req.body;
-    if(!validador(caracteristicas)) res.render("error");
+router.post('/addImage',async(req,res)=>{
+    const {caracteristicas,precio,imagenes } = req.body;
+    if(!validador(caracteristicas)) return res.send("error");
+    // console.log(`caracteristicas : ${caracteristicas}  - precio ${precio}  - ${ JSON.parse(imagenes)}`);    
+    const [rows] = await pool.query("call bd_hotel.agregar_habitaciones( ? , ? );",[caracteristicas,precio]);
+    if(rows[0]){
+        let aux_id =rows[0][0]['id_habitacion']; 
+        // console.log(aux_id);
+        let imagenes_aux = JSON.parse(imagenes);
+        let consulta = "INSERT INTO fotos_habitaciones(`id_habitacion`, `url_imagen`) VALUES ?";
+        let valores = imagenes_aux.map(element => [aux_id, element]);
+
+        const [resultado] = await pool.query(consulta, [valores]);
+        console.log(resultado.affectedRows);
+    }
+    res.send("hola");
 });
 
 router.post('/login_adm',async(req,res)=>{
