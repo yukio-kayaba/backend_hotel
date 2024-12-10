@@ -17,5 +17,9 @@ Ruta.post('/', async(req,res) => {
     res.send("hola");
 }); 
 
+Ruta.post('/addUsers',(req,res)=>{
+    
+});
+
 
 export default Ruta;
