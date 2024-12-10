@@ -60,6 +60,17 @@ router.post('/',async (req,res)=>{
     res.json(rows);
 });
 
+router.post('/fotos',async (req,res)=>{
+    const {id} = req.body;
+    const [rows] = await pool.query(`SELECT * FROM fotos_habitaciones where id_habitacion = ? ;`,[id]);   
+    // console.log(id);
+    // console.log(rows);
+    if(rows){
+        return res.json(rows);
+    }
+    res.send("error");
+});
+
 router.post('/add',async(req,res)=>{
     const {caracteristicas,cuartos,precio } = req.body;
     if(!validador(caracteristicas)) res.render("error");
