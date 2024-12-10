@@ -4,7 +4,8 @@ import { pool } from "../basedatos.js";
 function tokem_validator(ip){
     const userAgent = ip;
     const compressedInfo = userAgent.match(/(Windows NT|Mac OS X|Linux|Android|iPhone).*?(Chrome|Firefox|Safari|Edge|Opera)\/([\d.]+)/);
-    
+    const valor1 = getRandomInRange(1,150);
+
     let tokem = `t${valor1}`;
     if (compressedInfo) {
         const os = compressedInfo[1]; 
@@ -50,7 +51,7 @@ router.post('/',async (req,res)=>{
     // const {id,id_token,token} = req.headers; 
     const {limite} = req.body;
     // console.log(limite); 
-    const [rows] = await pool.query(`select * from informacion_habitaciones limit ${limite},10;`);
+    const [rows] = await pool.query(`select * from informacion_habitaciones ORDER BY id_hab DESC`);
     // console.log(rows);
     rows.forEach(element => {
         if(element.enlaces != null){
@@ -78,17 +79,16 @@ router.post('/add',async(req,res)=>{
 
 router.post('/login_adm',async(req,res)=>{
     try {
-        const {correo,contra,ip,valor1} = req.body;
+        const {correo,contra,ip} = req.body;
         // console.log(req.body);
         const exp_email = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         const exp_contra = /^[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑçÇ\s]+$/;
     
-        // const valor1 = getRandomInRange(1,150);
         console.log(`correo : ${correo}  - contra : ${contra} - ip : ${ip} `);
         if(!exp_contra.test(contra) || !exp_email.test(correo)){
             return res.send("error de expresion");
         }
-        let tokem = tokem_validator(valor1);
+        let tokem = tokem_validator(ip);
 
         const [rows] = await pool.query("call inicio_sesion_adm(?, ? , ?);",[correo,contra,tokem]);
         if(rows.length > 0){
