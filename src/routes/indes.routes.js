@@ -90,6 +90,41 @@ router.post('/addImage',async(req,res)=>{
     res.send("hola");
 });
 
+router.post('/ubdateImage',async (req,res)=>{
+    const {id,id_tokem,tokem} = req.headers;
+    const {id_actualizar,caracteristicas,precio,imagenes_nuevas,imagenes_update} = req.body;
+    const {fecha} = req.body;
+    const exp_contra = /^[a-zA-Z0-9_áéíóúÁÉÍÓÚñÑçÇ\s.\n]+$/;
+    if(!exp_contra.test(tokem) || !exp_contra.test(id) || !exp_contra.test(id_tokem)){
+        return res.send("token no valido");
+    }
+    const [datos] = await pool.query(`select a.correo from administradores a, tokens_user t where a.id = ${id} and t.id_token = ${id_tokem} and t.token = '${tokem}' and t.activo = '1';`); 
+    console.log(`id : ${id_actualizar} - carac : ${caracteristicas} - price: ${precio} -- new image : ${imagenes_nuevas} -- iamgenes: ${imagenes_update}`);
+    // return res.send("hola");
+    if(datos[0]){
+        let [update] = await pool.query("UPDATE `habitaciones` SET `caracteristicas` = ?, `precio` = ? WHERE (`id_hab` =  ? );",[caracteristicas,precio,id_actualizar]);
+        let imagenes_aux = JSON.parse(imagenes_nuevas);
+        if(imagenes_aux.length > 0){
+            let consulta = "INSERT INTO fotos_habitaciones(`id_habitacion`, `url_imagen`) VALUES ?";
+            let valores = imagenes_aux.map(element => [id_actualizar, element]);
+            const [resultado] = await pool.query(consulta, [valores]);
+        }
+
+        let imagenes_update_aux = JSON.parse(imagenes_update);
+        if(imagenes_update_aux.length  > 0){
+            let consulta_2 = "UPDATE `fotos_habitaciones` SET `url_imagen` = ?  WHERE (`id_fotos` =  ? );";
+            imagenes_update_aux.forEach(async(element) => {
+                let url,id;
+                url = element['url'];
+                id = element['id_foto'];
+                let [afectados] = await pool.query(consulta_2,[url,id]);
+            });
+        }
+        return res.send('actualizado');
+    }
+    res.send('hola');
+});
+
 router.post('/login_adm',async(req,res)=>{
     try {
         const {correo,contra,ip} = req.body;
