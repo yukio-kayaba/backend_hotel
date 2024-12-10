@@ -11,8 +11,7 @@ Ruta.post('/', async(req,res) => {
     if(datos[0]){
         const [rows] = await pool.query("select id_user,nombre,apellido,dni,fecha_creacion from usuarios_clientes;");
         
-        // let datos_r = [JSON.stringify(rows[0]),JSON.stringify(hors[0])];
-        console.log(`datos _ r : ${JSON.stringify(rows)}`);
+        // console.log(`datos _ r : ${JSON.stringify(rows)}`);
         return res.json(rows);
     }
     res.send("hola");

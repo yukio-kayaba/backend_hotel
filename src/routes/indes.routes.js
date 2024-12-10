@@ -49,9 +49,9 @@ const validador = (texto)=>{
 router.post('/',async (req,res)=>{
     // const {id,id_token,token} = req.headers; 
     const {limite} = req.body;
-    console.log(limite); 
+    // console.log(limite); 
     const [rows] = await pool.query(`select * from informacion_habitaciones limit ${limite},10;`);
-    console.log(rows);
+    // console.log(rows);
     rows.forEach(element => {
         if(element.enlaces != null){
             element.enlaces = convertidor_arrays_imagenes(element.enlaces);
